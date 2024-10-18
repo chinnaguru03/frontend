@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import Loader from '../components/utils/Loading';
 // Reusable Dialog Component
 const Dialog = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
@@ -20,18 +20,21 @@ const TaskList = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [formType, setFormType] = useState('add'); // 'add', 'edit', 'view'
-
+  const [loading, setLoading] = useState(false);
   // Fetch tasks from API on component mount
   useEffect(() => {
     fetchTasks();
   }, []);
 
   const fetchTasks = async () => {
+    setLoading(true);
     try {
       const response = await axios.get('https://vooshbackend-ncvm.onrender.com/api/tasks'); // Adjust URL if necessary
       setTasks(response.data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
+    } finally {
+        setLoading(false); // Stop loading
     }
   };
 
@@ -51,6 +54,7 @@ const TaskList = () => {
   };
 
   const saveTask = async () => {
+    setLoading(true);
     try {
       if (formType === 'add') {
         const response = await axios.post('https://vooshbackend-ncvm.onrender.com/api/tasks', currentTask);
@@ -62,15 +66,20 @@ const TaskList = () => {
       closeDialog();
     } catch (error) {
       console.error(formType === 'add' ? 'Error creating task:' : 'Error updating task:', error);
+    } finally {
+        setLoading(false); // Stop loading
     }
   };
 
   const deleteTask = async (_id) => {
+    setLoading(true);
     try {
       await axios.delete(`https://vooshbackend-ncvm.onrender.com/api/tasks/${_id}`);
       setTasks(tasks.filter((task) => task._id !== _id));
     } catch (error) {
       console.error('Error deleting task:', error);
+    } finally {
+        setLoading(false); // Stop loading
     }
   };
 
@@ -93,21 +102,25 @@ const TaskList = () => {
     const taskToUpdate = tasks.find(task => task._id === taskId);
 
     if (taskToUpdate) {
+        setLoading(true);
       try {
         const updatedTask = { ...taskToUpdate, status }; // Update task's status
         const response = await axios.put(`https://vooshbackend-ncvm.onrender.com/api/tasks/${taskId}`, updatedTask);
         setTasks(tasks.map(task => (task._id === taskId ? response.data : task))); // Update local state
       } catch (error) {
         console.error('Error updating task status:', error);
+      } finally {
+        setLoading(false); // Stop loading
       }
     }
   };
 
   return (
     <div className="p-6">
+        {loading && <Loader />}
       <button
         className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-        onClick={() => openTaskForm(null, 'add')}
+        onClick={() => openTaskForm(null, 'add')} disabled={loading}
       >
         Add Task
       </button>
@@ -132,9 +145,9 @@ const TaskList = () => {
                 <p>{task.description}</p>
                 <p className="text-sm text-gray-500">Created at: {task.createdAt}</p>
                 <div className="flex justify-end space-x-2 mt-2">
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => deleteTask(task._id)}>Delete</button>
-                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'edit')}>Edit</button>
-                  <button className="bg-blue-300 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'view')}>View Details</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => deleteTask(task._id)} disabled={loading}>Delete</button>
+                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'edit')} disabled={loading}>Edit</button>
+                  <button className="bg-blue-300 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'view')} disabled={loading}>View Details</button>
                 </div>
               </div>
             ))}
@@ -160,9 +173,9 @@ const TaskList = () => {
                 <p>{task.description}</p>
                 <p className="text-sm text-gray-500">Created at: {task.createdAt}</p>
                 <div className="flex justify-end space-x-2 mt-2">
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => deleteTask(task._id)}>Delete</button>
-                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'edit')}>Edit</button>
-                  <button className="bg-blue-300 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'view')}>View Details</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => deleteTask(task._id)} disabled={loading}>Delete</button>
+                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'edit')} disabled={loading}>Edit</button>
+                  <button className="bg-blue-300 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'view')} disabled={loading}>View Details</button>
                 </div>
               </div>
             ))}
@@ -188,9 +201,9 @@ const TaskList = () => {
                 <p>{task.description}</p>
                 <p className="text-sm text-gray-500">Created at: {task.createdAt}</p>
                 <div className="flex justify-end space-x-2 mt-2">
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => deleteTask(task._id)}>Delete</button>
-                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'edit')}>Edit</button>
-                  <button className="bg-blue-300 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'view')}>View Details</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => deleteTask(task._id)} disabled={loading}>Delete</button>
+                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'edit')} disabled={loading}>Edit</button>
+                  <button className="bg-blue-300 text-white px-2 py-1 rounded" onClick={() => openTaskForm(task, 'view')} disabled={loading}>View Details</button>
                 </div>
               </div>
             ))}
@@ -230,8 +243,8 @@ const TaskList = () => {
               required
             />
             <div className="flex justify-end mt-4">
-              <button className="bg-red-500 text-white px-4 py-2 rounded mr-2" onClick={closeDialog}>Cancel</button>
-              <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={saveTask}>Save</button>
+              <button className="bg-red-500 text-white px-4 py-2 rounded mr-2" disabled={loading} onClick={closeDialog}>Cancel</button>
+              <button className="bg-green-500 text-white px-4 py-2 rounded" disabled={loading} onClick={saveTask}>Save</button>
             </div>
           </>
         )}

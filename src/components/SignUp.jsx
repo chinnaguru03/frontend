@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // Make sure to install axios if you haven't already
 import { useNavigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
+import Loader from '../components/utils/Loading'; // Import the Loader component
+
+const clientId = "801024966636-slk5qff2nh1juiqc1tr10bo0q8jgtnlo.apps.googleusercontent.com";
 
 export default function SignUp() {
   // State to hold form data
@@ -14,7 +19,9 @@ export default function SignUp() {
 
   // State to hold any error messages
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // State to manage loading
   const navigate = useNavigate();
+
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,10 +34,13 @@ export default function SignUp() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
+    setError(''); // Clear error state
+    setIsLoading(true); // Start the loader when the request starts
 
     // Check if password and confirm password match
     if (formData.password !== formData.c_password) {
       setError('Passwords do not match'); // Set error message
+      setIsLoading(false); // Stop loader if there's an error
       return; // Stop the submission
     }
 
@@ -45,11 +55,39 @@ export default function SignUp() {
     } catch (err) {
       // Handle errors from the API
       setError(err.response?.data?.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false); // Stop loader after response
     }
   };
 
+  const onSuccess = async (res) => {
+    setIsLoading(true); // Start loader when Google login starts
+    try {
+      const token = res.credential;
+      console.log(token);
+      const payload = {
+        authKey: token,
+      };
+      const response = await axios.post('https://vooshbackend-ncvm.onrender.com/auth/google', payload);
+      console.log(response);
+      if (response.data.email) {
+        localStorage.setItem('authToken', response.data.token);
+        navigate('/tasklist');
+      }
+    } catch (e) {
+      console.log("Invalid email or password", "error");
+    } finally {
+      setIsLoading(false); // Stop loader after response
+    }
+  };
+
+  const onFailure = (res) => {
+    console.log("Registration failed. Please try again.", "error");
+  };
+
   return (
-    <>
+    <GoogleOAuthProvider clientId={clientId}>
+      {isLoading && <Loader />} {/* Display the loader when isLoading is true */}
       <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-4 lg:px-8">
         <div className="mt-0 sm:mx-auto sm:w-full sm:max-w-[480px]">
           <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
@@ -155,31 +193,11 @@ export default function SignUp() {
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4">
-              <a
-                href="#"
-                className="flex w-full items-center justify-center gap-3 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-                  {/* Google icon paths */}
-                  <path
-                    d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z"
-                    fill="#EA4335"
-                  />
-                  <path
-                    d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.34 17.25 16.23 18.09C15.12 18.93 13.83 19.25 12.5 19.25C10.77 19.25 9.19 18.66 8 17.5L4 20.94C6.35 23.65 9.94 25 12 25C18.69 25 23.49 20.11 23.49 12.275Z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M0 12C0 14.15 0.36 16.22 1.03 18.14L5.25 15.16C5.02 14.34 4.87 13.48 4.87 12.5C4.87 11.56 5.02 10.68 5.25 9.84L1.03 6.84C0.36 8.76 0 10.83 0 12Z"
-                    fill="#FBBC05"
-                  />
-                </svg>
-                Sign up with Google
-              </a>
+              <GoogleLogin onSuccess={onSuccess} onError={onFailure} />
             </div>
           </div>
         </div>
       </div>
-    </>
+    </GoogleOAuthProvider>
   );
 }

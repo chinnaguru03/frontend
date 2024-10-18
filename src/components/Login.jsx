@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleLogin } from "@react-oauth/google";
+import axios from 'axios';
+import Loader from '../components/utils/Loading'; // Import the Loader component
 
 const clientId = "801024966636-slk5qff2nh1juiqc1tr10bo0q8jgtnlo.apps.googleusercontent.com";
 
@@ -9,15 +11,14 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // State for tracking loading
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent the default form submission
+    event.preventDefault(); 
 
-    // Reset any previous error
     setError(null);
-
-    // Prepare the request payload
+    setIsLoading(true); // Start the loader when the request starts
     const payload = {
       email,
       password,
@@ -38,26 +39,31 @@ export default function Login() {
 
       const data = await response.json();
       localStorage.setItem('authToken', data.token);
-      // Handle successful login (e.g., store token, redirect user)
-      console.log('Login successful:', data);
-      // Redirect or perform further actions here
-      navigate('/tasklist'); 
-
+      navigate('/tasklist');
     } catch (error) {
-      setError(error.message); // Set error message for display
+      setError(error.message);
+    } finally {
+      setIsLoading(false); // Stop the loader when the request is done
     }
   };
 
   const onSuccess = async (res) => {
+    setIsLoading(true); // Start the loader when Google login starts
     try {
       const token = res.credential;
-      console.log(token)
       const payload = {
         authKey: token,
       };
+      const response = await axios.post('https://vooshbackend-ncvm.onrender.com/auth/google', payload);
       
+      if (response.data.email) {
+        localStorage.setItem('authToken', response.data.token);
+        navigate('/tasklist');
+      }
     } catch (e) {
       console.log("Invalid email or password", "error");
+    } finally {
+      setIsLoading(false); // Stop the loader after the response
     }
   };
 
@@ -67,6 +73,7 @@ export default function Login() {
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
+      {isLoading && <Loader />} {/* Display loader while isLoading is true */}
       <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="mt-5 sm:mx-auto sm:w-full sm:max-w-[480px]">
           <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
@@ -136,7 +143,7 @@ export default function Login() {
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4">
-            <GoogleLogin onSuccess={onSuccess} onError={onFailure} />
+              <GoogleLogin onSuccess={onSuccess} onError={onFailure} />
             </div>
           </div>
         </div>

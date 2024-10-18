@@ -1,0 +1,14 @@
+.loader {
+    border-top-color: #3490dc; /* Set the color for the top of the spinner */
+    animation: spin 1s linear infinite; /* Infinite spinning animation */
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg); /* Starting point of the rotation */
+    }
+    to {
+      transform: rotate(360deg); /* Ending point of the rotation */
+    }
+  }
+  

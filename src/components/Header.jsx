@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Dialog, DialogPanel } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import Loader from '../components/utils/Loading';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate(); // Initialize navigate
 
   const handleLogout = async () => {
+    setIsLoading(true);
     try {
       await fetch('https://vooshbackend-ncvm.onrender.com/api/logout', {
         method: 'POST',
@@ -20,6 +23,8 @@ export default function Header() {
       navigate('/login'); // Redirect to login page after logout
     } catch (error) {
       console.error('Logout failed:', error);
+    } finally {
+      setIsLoading(false); // Stop the loader when the request is done
     }
   };
 
@@ -27,6 +32,7 @@ export default function Header() {
 
   return (
     <header className="bg-blue-100"> {/* Light blue background */}
+    {isLoading && <Loader />} 
       <nav aria-label="Global" className="mx-auto flex items-center justify-between p-3 lg:px-5">
         <div className="flex lg:flex-1">
           <a href="#" className="-m-1.5 p-1.5">
