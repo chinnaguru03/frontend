@@ -9,7 +9,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:3000/api/logout', {
+      await fetch('https://vooshbackend-ncvm.onrender.com/api/logout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Send token for authentication

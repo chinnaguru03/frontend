@@ -38,7 +38,7 @@ export default function SignUp() {
     const { c_password, ...dataToSubmit } = formData;
 
     try {
-      const response = await axios.post('http://localhost:3000/api/register', dataToSubmit);
+      const response = await axios.post('https://vooshbackend-ncvm.onrender.com/api/register', dataToSubmit);
       // Handle success response, e.g., redirect or display success message
       console.log(response.data); // Log response or handle it as needed
       navigate('/login');

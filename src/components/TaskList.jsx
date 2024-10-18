@@ -28,7 +28,7 @@ const TaskList = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/tasks'); // Adjust URL if necessary
+      const response = await axios.get('https://vooshbackend-ncvm.onrender.com/api/tasks'); // Adjust URL if necessary
       setTasks(response.data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -53,10 +53,10 @@ const TaskList = () => {
   const saveTask = async () => {
     try {
       if (formType === 'add') {
-        const response = await axios.post('http://localhost:3000/api/tasks', currentTask);
+        const response = await axios.post('https://vooshbackend-ncvm.onrender.com/api/tasks', currentTask);
         setTasks([...tasks, response.data]);
       } else if (formType === 'edit') {
-        const response = await axios.put(`http://localhost:3000/api/tasks/${currentTask._id}`, currentTask);
+        const response = await axios.put(`https://vooshbackend-ncvm.onrender.com/api/tasks/${currentTask._id}`, currentTask);
         setTasks(tasks.map(task => (task._id === currentTask._id ? response.data : task)));
       }
       closeDialog();
@@ -67,7 +67,7 @@ const TaskList = () => {
 
   const deleteTask = async (_id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/tasks/${_id}`);
+      await axios.delete(`https://vooshbackend-ncvm.onrender.com/api/tasks/${_id}`);
       setTasks(tasks.filter((task) => task._id !== _id));
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -95,7 +95,7 @@ const TaskList = () => {
     if (taskToUpdate) {
       try {
         const updatedTask = { ...taskToUpdate, status }; // Update task's status
-        const response = await axios.put(`http://localhost:3000/api/tasks/${taskId}`, updatedTask);
+        const response = await axios.put(`https://vooshbackend-ncvm.onrender.com/api/tasks/${taskId}`, updatedTask);
         setTasks(tasks.map(task => (task._id === taskId ? response.data : task))); // Update local state
       } catch (error) {
         console.error('Error updating task status:', error);
